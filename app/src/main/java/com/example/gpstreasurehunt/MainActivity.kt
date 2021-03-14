@@ -3,6 +3,7 @@ package com.example.gpstreasurehunt
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.location.Location
 import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
@@ -18,9 +19,11 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.snackbar.Snackbar
+import android.content.ContentValues.TAG
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -61,6 +64,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+
+        try {
+            var success = false
+            success = mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.style_json))
+            if (!success){
+                Log.e(TAG, "Style parsing failed")
+            }
+        } catch (e: Resources.NotFoundException) {
+            Log.e(TAG, "Cant find style, Error", e)
+        }
 
         mMap.addMarker(MarkerOptions().position(defaultLocation))
         mMap.moveCamera(CameraUpdateFactory.newLatLng(defaultLocation))
