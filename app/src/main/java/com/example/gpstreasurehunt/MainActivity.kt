@@ -24,19 +24,24 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.snackbar.Snackbar
 import android.content.ContentValues.TAG
+import com.example.gpstreasurehunt.models.WaypointModel
+import kotlin.random.Random
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
-    private val intervalVal = 3000;
-    private val fastestIntervalVal = 1000;
-    private val minZoom = 15.0f
-    private val maxZoom = 25.0f
+    private var intervalVal = 3000;
+    private var fastestIntervalVal = 1000;
+    private var minZoom = 15.0f
+    private var maxZoom = 25.0f
     private val LOCATION_PERMISSION_REQ_CODE = 1000
     private lateinit var userMarker: Marker
 
     private val defaultLocation = LatLng(0.0, 0.0)
+
+    private var waypointArrayList = ArrayList<WaypointModel>()
+    private var waypointId = 0;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +59,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
 
         requestNewLocationData()
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -76,9 +82,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         mMap.addMarker(MarkerOptions().position(defaultLocation))
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(defaultLocation))
-        mMap.setMinZoomPreference(minZoom)
-        mMap.setMaxZoomPreference(maxZoom)
+        //mMap.moveCamera(CameraUpdateFactory.newLatLng(defaultLocation))
+        //mMap.setMinZoomPreference(minZoom)
+        //mMap.setMaxZoomPreference(maxZoom)
+
+
+        populateList()
+        populateMap()
     }
 
     private fun isLocationEnabled(): Boolean {
@@ -154,6 +164,25 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                     mMap.animateCamera(CameraUpdateFactory.newLatLng(lastLoc))
                 }
             }
+        }
+    }
+
+    private fun populateList() {
+        for (i in 0..9){
+            var latitude = Random.nextLong(51.toLong(), 52.toLong())
+            var longitude = Random.nextLong((3).toLong(), (4).toLong())
+            var model = WaypointModel(waypointId, latitude, longitude, 3)
+            waypointArrayList.add(model)
+        }
+    }
+
+    private fun populateMap() {
+        for (i in 0..9){
+            var model = waypointArrayList.get(i)
+            val modelLocation = LatLng(model.getLatitude().toDouble(), model.getLongitude().toDouble())
+            val waypoint = mMap.addMarker(
+                    MarkerOptions().position(modelLocation).title(model.getId().toString())
+            )
         }
     }
 

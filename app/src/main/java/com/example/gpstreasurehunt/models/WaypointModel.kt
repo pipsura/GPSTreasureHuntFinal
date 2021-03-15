@@ -27,6 +27,10 @@ class WaypointModel(idInput: Int, latitudeInput: Long, longitudeInput: Long, use
         this.usesNum?.dec()
     }
 
+    fun getId(): Int {
+        return idNum!!.toInt()
+    }
+
     fun getLatitude(): Long {
         return latitudeNum!!.toLong()
     }
