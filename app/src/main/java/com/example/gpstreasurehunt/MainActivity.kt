@@ -26,8 +26,10 @@ import com.google.android.material.snackbar.Snackbar
 import android.content.ContentValues.TAG
 import com.example.gpstreasurehunt.models.WaypointModel
 import kotlin.random.Random
+import kotlin.random.nextLong
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback {
+class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
+    OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
@@ -70,6 +72,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+        mMap.setOnMarkerClickListener(this)
 
         try {
             var success = false
@@ -169,9 +172,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun populateList() {
         for (i in 0..9){
-            var latitude = Random.nextLong(51.toLong(), 52.toLong())
-            var longitude = Random.nextLong((3).toLong(), (4).toLong())
-            var model = WaypointModel(waypointId, latitude, longitude, 3)
+            var latitude = Random.nextLong(51.6.toLong(), 52.62.toLong())
+            var longitude = Random.nextLong((-4.86).toLong(), (-3.88).toLong())
+            var model = WaypointModel(i, latitude, longitude, 3)
+            waypointId.inc()
             waypointArrayList.add(model)
         }
     }
@@ -185,5 +189,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             )
         }
     }
+
+
+        public override fun onMarkerClick(marker : Marker): Boolean {
+            val fm = supportFragmentManager
+            val createFragment = WaypointFragment()
+
+            createFragment.show(fm, "CreateAccountDialog")
+            return false;
+        }
 
 }
