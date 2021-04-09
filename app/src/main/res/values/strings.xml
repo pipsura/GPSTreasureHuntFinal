@@ -4,5 +4,6 @@
     <string name="logout">Logout</string>
     <string name="settings">Settings</string>
     <string name="profile">Profile</string>
+    <string name="waypointFragmentButton">Dig!</string>
 
 </resources>

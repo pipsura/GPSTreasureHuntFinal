@@ -1,11 +1,19 @@
 package com.example.gpstreasurehunt.models
 
-class WaypointModel(idInput: Int, latitudeInput: Long, longitudeInput: Long, usesInput: Int) {
+import android.os.Parcel
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
+
+@Parcelize
+class WaypointModel(var idInput: Int,var latitudeInput: Long,var longitudeInput: Long,var usesInput: Int):
+    Parcelable {
 
     private var idNum: Int? = idInput
     private var latitudeNum: Long? = latitudeInput
     private var longitudeNum: Long? = longitudeInput
     private var usesNum: Int? = usesInput
+
+
 
     fun setLatitude(latitude: Long){
         this.latitudeNum = latitude
@@ -42,5 +50,7 @@ class WaypointModel(idInput: Int, latitudeInput: Long, longitudeInput: Long, use
     fun getUses(): Int {
         return usesNum!!.toInt()
     }
+
+
 
 }

@@ -24,6 +24,7 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.snackbar.Snackbar
 import android.content.ContentValues.TAG
+import android.os.Parcelable
 import com.example.gpstreasurehunt.models.WaypointModel
 import kotlin.random.Random
 import kotlin.random.nextLong
@@ -57,7 +58,7 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         val mapFragment = supportFragmentManager
-                .findFragmentById(R.id.map) as SupportMapFragment
+            .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
         requestNewLocationData()
@@ -72,31 +73,29 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        mMap.setOnMarkerClickListener(this)
 
         try {
             var success = false
             success = mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.style_json))
-            if (!success){
+            if (!success) {
                 Log.e(TAG, "Style parsing failed")
             }
         } catch (e: Resources.NotFoundException) {
             Log.e(TAG, "Cant find style, Error", e)
         }
 
-        mMap.addMarker(MarkerOptions().position(defaultLocation))
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(defaultLocation))
         //mMap.setMinZoomPreference(minZoom)
         //mMap.setMaxZoomPreference(maxZoom)
-
-
         populateList()
         populateMap()
+
+        mMap.setOnMarkerClickListener(this)
     }
 
     private fun isLocationEnabled(): Boolean {
         val locationManager: LocationManager =
-                getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
@@ -108,18 +107,18 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         mLocationRequest.fastestInterval = fastestIntervalVal.toLong()
 
         if (ActivityCompat.checkSelfPermission(
-                        this, Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
+                this, Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQ_CODE
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQ_CODE
             )
             return
         }
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         mFusedLocationClient.requestLocationUpdates(
-                mLocationRequest, mLocationCallback, Looper.myLooper()
+            mLocationRequest, mLocationCallback, Looper.myLooper()
         )
     }
 
@@ -131,7 +130,7 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
 
             val lastLoc = LatLng(lat, long)
 
-            if (::userMarker.isInitialized){
+            if (::userMarker.isInitialized) {
                 userMarker.remove()
             }
 
@@ -144,12 +143,12 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
     private fun getLastLocation() {
         if (isLocationEnabled()) {
             if (ActivityCompat.checkSelfPermission(
-                            this, Manifest.permission.ACCESS_FINE_LOCATION
-                    ) != PackageManager.PERMISSION_GRANTED
+                    this, Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
             ) {
                 ActivityCompat.requestPermissions(
-                        this,
-                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQ_CODE
+                    this,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQ_CODE
                 )
                 return
             }
@@ -171,32 +170,44 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
     }
 
     private fun populateList() {
-        for (i in 0..9){
-            var latitude = Random.nextLong(51.6.toLong(), 52.62.toLong())
-            var longitude = Random.nextLong((-4.86).toLong(), (-3.88).toLong())
-            var model = WaypointModel(i, latitude, longitude, 3)
+        for (i in 0..9) {
+            var latitude: Long = (Random.nextLong(5160, 5162))/1000
+            var longitude: Long = (Random.nextLong(3860, 3880))/1000
+            var model = WaypointModel(i, latitude, longitude*-1, 3)
             waypointId.inc()
             waypointArrayList.add(model)
         }
     }
 
     private fun populateMap() {
-        for (i in 0..9){
+        for (i in 0..9) {
             var model = waypointArrayList.get(i)
-            val modelLocation = LatLng(model.getLatitude().toDouble(), model.getLongitude().toDouble())
+            val modelLocation =
+                LatLng(model.getLatitude().toDouble(), model.getLongitude().toDouble())
             val waypoint = mMap.addMarker(
-                    MarkerOptions().position(modelLocation).title(model.getId().toString())
+                MarkerOptions().position(modelLocation)
+                    .title(model.getId().toString())
             )
+            waypoint.setTag(model)
+            val lel: WaypointModel = waypoint.getTag() as WaypointModel
+            val poop = lel.getLatitude()
         }
     }
 
 
-        public override fun onMarkerClick(marker : Marker): Boolean {
-            val fm = supportFragmentManager
-            val createFragment = WaypointFragment()
+    public override fun onMarkerClick(marker: Marker): Boolean {
+        val fm = supportFragmentManager
+        val createFragment = WaypointFragment()
+        val args: Bundle? = null
+        val argsParam = "waypoint"
+        val model = marker.getTag()
 
-            createFragment.show(fm, "CreateAccountDialog")
-            return false;
-        }
+        args?.putParcelable(argsParam, model as? Parcelable)
+        createFragment.arguments = args
+
+
+        createFragment.show(fm, "CreateAccountDialog")
+        return false;
+    }
 
 }
