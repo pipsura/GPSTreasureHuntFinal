@@ -84,9 +84,9 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
             Log.e(TAG, "Cant find style, Error", e)
         }
 
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(defaultLocation))
-        //mMap.setMinZoomPreference(minZoom)
-        //mMap.setMaxZoomPreference(maxZoom)
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(defaultLocation))
+        mMap.setMinZoomPreference(minZoom)
+        mMap.setMaxZoomPreference(maxZoom)
         populateList()
         populateMap()
 
@@ -187,6 +187,7 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
                 MarkerOptions().position(modelLocation)
                     .title(model.getId().toString())
             )
+            waypoint.setTag(model)
             //val lel: WaypointModel = waypoint.getTag() as WaypointModel
             //val poop = lel.getLatitude()
         }
@@ -196,11 +197,12 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
     public override fun onMarkerClick(marker: Marker): Boolean {
         val fm = supportFragmentManager
         val createFragment = WaypointFragment()
-        val args: Bundle? = null
+        val args = Bundle()
         val argsParam = "waypoint"
         val model = marker.getTag()
 
-        args?.putParcelable(argsParam, model as? Parcelable)
+        val parseModel = model as Parcelable
+        args.putParcelable(argsParam, parseModel)
         createFragment.arguments = args
 
 
