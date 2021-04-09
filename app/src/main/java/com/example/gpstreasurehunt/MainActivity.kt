@@ -171,7 +171,7 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
 
     private fun populateList() {
         for (i in 0..9) {
-            var latitude: Double = Random.nextDouble(5.160, 5.162)
+            var latitude: Double = Random.nextDouble(51.60, 51.62)
             var longitude: Double = Random.nextDouble(3.860, 3.880)*-1
             var model = WaypointModel(i, latitude, longitude, 3)
             waypointId.inc()
