@@ -171,9 +171,9 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
 
     private fun populateList() {
         for (i in 0..9) {
-            var latitude: Long = (Random.nextLong(5160, 5162))/1000
-            var longitude: Long = (Random.nextLong(3860, 3880))/1000
-            var model = WaypointModel(i, latitude, longitude*-1, 3)
+            var latitude: Double = Random.nextDouble(5.160, 5.162)
+            var longitude: Double = Random.nextDouble(3.860, 3.880)*-1
+            var model = WaypointModel(i, latitude, longitude, 3)
             waypointId.inc()
             waypointArrayList.add(model)
         }
@@ -182,15 +182,13 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
     private fun populateMap() {
         for (i in 0..9) {
             var model = waypointArrayList.get(i)
-            val modelLocation =
-                LatLng(model.getLatitude().toDouble(), model.getLongitude().toDouble())
+            val modelLocation = LatLng(model.getLatitude(), model.getLongitude())
             val waypoint = mMap.addMarker(
                 MarkerOptions().position(modelLocation)
                     .title(model.getId().toString())
             )
-            waypoint.setTag(model)
-            val lel: WaypointModel = waypoint.getTag() as WaypointModel
-            val poop = lel.getLatitude()
+            //val lel: WaypointModel = waypoint.getTag() as WaypointModel
+            //val poop = lel.getLatitude()
         }
     }
 
