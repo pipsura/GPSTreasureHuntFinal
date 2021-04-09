@@ -5,29 +5,31 @@ import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize
-class WaypointModel(var idInput: Int,var latitudeInput: Double,var longitudeInput: Double,var usesInput: Int):
-    Parcelable {
+class WaypointModel(
+    var idInput: Int,
+    var latitudeInput: Double,
+    var longitudeInput: Double,
+    var usesInput: Int
+) : Parcelable {
 
     private var idNum: Int? = idInput
     private var latitudeNum: Double? = latitudeInput
     private var longitudeNum: Double? = longitudeInput
     private var usesNum: Int? = usesInput
 
-
-
-    fun setLatitude(latitude: Double){
+    fun setLatitude(latitude: Double) {
         this.latitudeNum = latitude
     }
 
-    fun setLongitude(longitude: Double){
+    fun setLongitude(longitude: Double) {
         this.longitudeNum = longitude
     }
 
-    fun setUses(uses: Int){
+    fun setUses(uses: Int) {
         this.usesNum = uses
     }
 
-    fun incrementUses(){
+    fun incrementUses() {
         this.usesNum?.inc()
     }
 
@@ -50,7 +52,6 @@ class WaypointModel(var idInput: Int,var latitudeInput: Double,var longitudeInpu
     fun getUses(): Int {
         return usesNum!!.toInt()
     }
-
 
 
 }

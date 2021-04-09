@@ -63,6 +63,8 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
 
         requestNewLocationData()
 
+
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -86,11 +88,18 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
 
         mMap.moveCamera(CameraUpdateFactory.newLatLng(defaultLocation))
         mMap.setMinZoomPreference(minZoom)
-        mMap.setMaxZoomPreference(maxZoom)
+        //mMap.setMaxZoomPreference(maxZoom)
         populateList()
         populateMap()
 
         mMap.setOnMarkerClickListener(this)
+
+        for (i in 0..8) {
+            val model = waypointArrayList.get(i)
+            val j = i + 1
+            val model2 = waypointArrayList.get(j)
+            println(findDistance(model, model2))
+        }
     }
 
     private fun isLocationEnabled(): Boolean {
@@ -171,9 +180,9 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
 
     private fun populateList() {
         for (i in 0..9) {
-            var latitude: Double = Random.nextDouble(51.60, 51.62)
-            var longitude: Double = Random.nextDouble(3.860, 3.880)*-1
-            var model = WaypointModel(i, latitude, longitude, 3)
+            val latitude: Double = Random.nextDouble(51.60, 51.62)
+            val longitude: Double = Random.nextDouble(3.860, 3.880) * -1
+            val model = WaypointModel(i, latitude, longitude, 3)
             waypointId.inc()
             waypointArrayList.add(model)
         }
@@ -181,20 +190,18 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
 
     private fun populateMap() {
         for (i in 0..9) {
-            var model = waypointArrayList.get(i)
+            val model = waypointArrayList.get(i)
             val modelLocation = LatLng(model.getLatitude(), model.getLongitude())
             val waypoint = mMap.addMarker(
                 MarkerOptions().position(modelLocation)
                     .title(model.getId().toString())
             )
             waypoint.setTag(model)
-            //val lel: WaypointModel = waypoint.getTag() as WaypointModel
-            //val poop = lel.getLatitude()
         }
     }
 
 
-    public override fun onMarkerClick(marker: Marker): Boolean {
+    override fun onMarkerClick(marker: Marker): Boolean {
         val fm = supportFragmentManager
         val createFragment = WaypointFragment()
         val args = Bundle()
@@ -208,6 +215,20 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
 
         createFragment.show(fm, "CreateAccountDialog")
         return false;
+    }
+
+    private fun findDistance(waypointOne: WaypointModel, waypointTwo: WaypointModel): Float {
+
+        val locationOne: Location = Location("")
+        locationOne.latitude = waypointOne.getLatitude()
+        locationOne.longitude = waypointOne.getLongitude()
+
+        val locationTwo: Location = Location("")
+        locationTwo.latitude = waypointTwo.getLatitude()
+        locationTwo.longitude = waypointTwo.getLongitude()
+
+        val distance = locationOne.distanceTo(locationTwo)
+        return distance
     }
 
 }

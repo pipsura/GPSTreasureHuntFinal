@@ -16,14 +16,16 @@ class WaypointFragment : DialogFragment() {
 
 
     lateinit var customView: View;
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View?
-    {
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         // Simply return the already inflated custom view
         var latText = customView.findViewById<TextView>(R.id.Latitude)
         var longText = customView.findViewById<TextView>(R.id.Longitude)
         val argsParam = "waypoint"
-        if(arguments != null) {
+        if (arguments != null) {
             var model = requireArguments().getParcelable<WaypointModel>(argsParam)
             val latStr = model!!.getLatitude().toString()
             val longStr = model!!.getLongitude().toString()
@@ -38,7 +40,6 @@ class WaypointFragment : DialogFragment() {
         customView = requireActivity().layoutInflater.inflate(R.layout.waypoint_fragment, null)
         return AlertDialog.Builder(requireContext()).setView(customView).create()
     }
-
 
 
 }
