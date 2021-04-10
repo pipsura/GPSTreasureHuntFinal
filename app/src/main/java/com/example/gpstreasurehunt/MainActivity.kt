@@ -64,7 +64,6 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         requestNewLocationData()
 
 
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -183,6 +182,7 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
             val latitude: Double = Random.nextDouble(51.60, 51.62)
             val longitude: Double = Random.nextDouble(3.860, 3.880) * -1
             val model = WaypointModel(i, latitude, longitude, 3)
+            model.generateRandomPointsArray()
             waypointId.inc()
             waypointArrayList.add(model)
         }
