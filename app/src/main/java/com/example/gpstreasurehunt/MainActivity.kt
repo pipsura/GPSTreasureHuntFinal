@@ -143,6 +143,7 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
             }
 
             userMarker = mMap.addMarker(MarkerOptions().position(lastLoc).title("Current location"))
+            userMarker.setTag("User")
             mMap.animateCamera(CameraUpdateFactory.newLatLng(lastLoc))
         }
     }
@@ -178,7 +179,7 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
     }
 
     private fun populateList() {
-        for (i in 0..9) {
+        for (i in 1..10) {
             val latitude: Double = Random.nextDouble(51.60, 51.62)
             val longitude: Double = Random.nextDouble(3.860, 3.880) * -1
             val model = WaypointModel(i, latitude, longitude, 3)
@@ -202,18 +203,28 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
 
 
     override fun onMarkerClick(marker: Marker): Boolean {
+
+        val userModel = WaypointModel(0, userMarker.position.latitude, userMarker.position.longitude, 0)
+
+
         val fm = supportFragmentManager
         val createFragment = WaypointFragment()
         val args = Bundle()
         val argsParam = "waypoint"
         val model = marker.getTag()
+        if (model == "User" || model == null){
+            return false
+        }
+        if (findDistance(userModel, model as WaypointModel) > 15){
+            return false
+        }
 
         val parseModel = model as Parcelable
         args.putParcelable(argsParam, parseModel)
         createFragment.arguments = args
 
 
-        createFragment.show(fm, "CreateAccountDialog")
+        createFragment.show(fm, "Waypoint")
         return false;
     }
 
