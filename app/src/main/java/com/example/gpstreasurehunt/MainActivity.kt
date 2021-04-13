@@ -12,8 +12,10 @@ import android.os.Looper
 import android.os.Parcelable
 import android.util.Log
 import android.view.Menu
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.view.isInvisible
 import com.example.gpstreasurehunt.models.WaypointModel
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -24,6 +26,9 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import java.lang.Math.atan
+import java.lang.Math.toDegrees
+import kotlin.math.sign
 import kotlin.random.Random
 
 
@@ -57,13 +62,24 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
 
         val fm = supportFragmentManager
 
-        val mainFragment = fm.findFragmentById(R.id.mainFragment)
-
         val mapFragment = fm.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
         requestNewLocationData()
 
+        //Widgets
+
+        val digButton = findViewById<Button>(R.id.foundButton)
+        digButton.isInvisible = true
+
+        val cancelButton = findViewById<Button>(R.id.cancelButton)
+        cancelButton.isInvisible = true
+
+        val buryButton = findViewById<Button>(R.id.buryButton)
+
+
+        var tanTest: Double = toDegrees(atan(-10.0 / -1.0))
+        Log.e(TAG, "got the input: $tanTest")
 
     }
 
@@ -212,13 +228,12 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
             0
         )
 
-
         val fm = supportFragmentManager
         val createFragment = WaypointFragment()
         val args = Bundle()
         val argsParam = "waypoint"
         val model = marker.getTag()
-        if (model == "User" || model == null){
+        if (model == "User" || model == null) {
             return false
         }
         /*
@@ -232,6 +247,7 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
 
 
         createFragment.show(fm, "Waypoint")
+
 
         return false;
     }
@@ -253,6 +269,45 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
     override fun sendInput(input: Boolean, model: WaypointModel) {
         val id = model.getId()
         Log.e(TAG, "got the input: $input +  $id")
+    }
+
+    //waypointOne will be the current location, waypointTwo is the desitnation
+    //returns a string of the direction (i.e. "meters west")
+    fun calculateDirection(waypointOne: WaypointModel, waypointTwo: WaypointModel): String {
+        var degrees: Double
+        val direction: String
+
+        val finalLat = waypointTwo.getLatitude() - waypointOne.getLatitude()
+        val finalLong = waypointTwo.getLongitude() - waypointOne.getLongitude()
+
+        degrees = toDegrees(kotlin.math.atan(finalLong / finalLat))
+
+        if(sign(finalLat) == -1.0 && sign(finalLong) == -1.0){
+            degrees += 180
+        } else if (sign(finalLat) == 1.0 && sign(finalLong) == -1.0){
+            degrees -= 90
+        } else if (sign(finalLat) == -1.0 && sign(finalLong) == 1.0){
+            degrees -= 270
+        }
+
+        when (degrees) {
+            in 337.5..22.5 -> direction = resources.getString(R.string.north)
+            in 22.5..67.5 -> direction = resources.getString(R.string.northeast)
+            in 67.5..112.5 -> direction = resources.getString(R.string.east)
+            in 112.5..157.5 -> direction = resources.getString(R.string.southeast)
+            in 157.5..202.5 -> direction = resources.getString(R.string.south)
+            in 202.5..247.5 -> direction = resources.getString(R.string.southwest)
+            in 247.5..292.5 -> direction = resources.getString(R.string.west)
+            in 292.5..337.5 -> direction = resources.getString(R.string.northwest)
+            else -> return ""
+        }
+
+        return direction
+
+    }
+
+    fun treasureHunt(model: WaypointModel) {
+
     }
 
 }

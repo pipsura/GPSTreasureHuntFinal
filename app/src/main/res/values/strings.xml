@@ -9,9 +9,13 @@
     <string name="cancelButton">Stop the search</string>
     <string name="latitude">latitude</string>
     <string name="longitude">longitude</string>
-    <string name="north">meters north</string>
-    <string name="south">meters south</string>
     <string name="east">meters east</string>
     <string name="west">meters west</string>
+    <string name="north">meters north</string>
+    <string name="northeast">meters north east</string>
+    <string name="northwest">meters north west</string>
+    <string name="south">meters south</string>
+    <string name="southeast">meters south east</string>
+    <string name="southwest">meters south west</string>
 
 </resources>

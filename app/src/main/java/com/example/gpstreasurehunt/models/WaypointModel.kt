@@ -34,13 +34,15 @@ class WaypointModel(
     fun generateRandomPointsArray(){
         var latitudeGen = latitudeNum!!
         var longitudeGen = longitudeNum!!
-        for (i in 0..4){
+        pointsArrayList.add(generatePair(latitudeNum!!, longitudeNum!!))
+        for (i in 1..4){
             var addPair = generatePair(latitudeGen, longitudeGen)
             pointsArrayList.add(addPair)
             latitudeGen = addPair.first
             longitudeGen = addPair.second
         }
     }
+
 
     fun incrementUses() {
         this.usesNum?.inc()
