@@ -4,6 +4,14 @@
     <string name="logout">Logout</string>
     <string name="settings">Settings</string>
     <string name="profile">Profile</string>
-    <string name="waypointFragmentButton">Dig!</string>
+    <string name="digButton">Dig!</string>
+    <string name="buryButton">Bury some treasure</string>
+    <string name="cancelButton">Stop the search</string>
+    <string name="latitude">latitude</string>
+    <string name="longitude">longitude</string>
+    <string name="north">meters north</string>
+    <string name="south">meters south</string>
+    <string name="east">meters east</string>
+    <string name="west">meters west</string>
 
 </resources>

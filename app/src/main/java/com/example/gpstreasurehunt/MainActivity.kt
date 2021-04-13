@@ -1,18 +1,20 @@
 package com.example.gpstreasurehunt
 
 import android.Manifest
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.location.Location
 import android.location.LocationManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
+import android.os.Parcelable
 import android.util.Log
 import android.view.Menu
-import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import com.example.gpstreasurehunt.models.WaypointModel
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -22,15 +24,11 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.material.snackbar.Snackbar
-import android.content.ContentValues.TAG
-import android.os.Parcelable
-import com.example.gpstreasurehunt.models.WaypointModel
 import kotlin.random.Random
-import kotlin.random.nextLong
+
 
 class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
-    OnMapReadyCallback {
+    OnMapReadyCallback, WaypointFragment.OnInputListener {
 
     private lateinit var mMap: GoogleMap
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
@@ -57,8 +55,11 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         //Map
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.map) as SupportMapFragment
+        val fm = supportFragmentManager
+
+        val mainFragment = fm.findFragmentById(R.id.mainFragment)
+
+        val mapFragment = fm.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
         requestNewLocationData()
@@ -204,7 +205,12 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
 
     override fun onMarkerClick(marker: Marker): Boolean {
 
-        val userModel = WaypointModel(0, userMarker.position.latitude, userMarker.position.longitude, 0)
+        val userModel = WaypointModel(
+            0,
+            userMarker.position.latitude,
+            userMarker.position.longitude,
+            0
+        )
 
 
         val fm = supportFragmentManager
@@ -215,9 +221,10 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         if (model == "User" || model == null){
             return false
         }
+        /*
         if (findDistance(userModel, model as WaypointModel) > 15){
             return false
-        }
+        }*/
 
         val parseModel = model as Parcelable
         args.putParcelable(argsParam, parseModel)
@@ -225,6 +232,7 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
 
 
         createFragment.show(fm, "Waypoint")
+
         return false;
     }
 
@@ -240,6 +248,11 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
 
         val distance = locationOne.distanceTo(locationTwo)
         return distance
+    }
+
+    override fun sendInput(input: Boolean, model: WaypointModel) {
+        val id = model.getId()
+        Log.e(TAG, "got the input: $input +  $id")
     }
 
 }
