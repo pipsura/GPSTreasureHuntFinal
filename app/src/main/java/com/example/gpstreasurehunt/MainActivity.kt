@@ -12,10 +12,13 @@ import android.os.Looper
 import android.os.Parcelable
 import android.util.Log
 import android.view.Menu
+import android.view.View
 import android.widget.Button
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.view.isInvisible
+import androidx.core.view.isVisible
 import com.example.gpstreasurehunt.models.WaypointModel
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -26,7 +29,13 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import java.lang.Math.atan
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.math.atan
 import java.lang.Math.toDegrees
 import kotlin.math.sign
 import kotlin.random.Random
@@ -47,7 +56,9 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
     private val defaultLocation = LatLng(0.0, 0.0)
 
     private var waypointArrayList = ArrayList<WaypointModel>()
-    private var waypointId = 0;
+    private var waypointId = 0
+
+    private var isHuntActive = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,29 +70,197 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
 
         //Map
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
         val fm = supportFragmentManager
-
         val mapFragment = fm.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
-
         requestNewLocationData()
 
         //Widgets
-
+        val buryButton = findViewById<Button>(R.id.buryButton)
         val digButton = findViewById<Button>(R.id.foundButton)
+        val cancelButton = findViewById<Button>(R.id.cancelButton)
+        val directionText = findViewById<TextView>(R.id.directionTextView)
+
+        digButton.setOnClickListener {
+        }
         digButton.isInvisible = true
 
-        val cancelButton = findViewById<Button>(R.id.cancelButton)
+        cancelButton.setOnClickListener{
+            isHuntActive = false
+        }
         cancelButton.isInvisible = true
 
-        val buryButton = findViewById<Button>(R.id.buryButton)
-
-
-        var tanTest: Double = toDegrees(atan(-10.0 / -1.0))
-        Log.e(TAG, "got the input: $tanTest")
-
     }
+    
+
+    private fun treasureHunt(inputModel: WaypointModel) {
+        CoroutineScope(Main).launch {
+            val result = startTreasureHunt(inputModel)
+            println("debug: $result")
+        }
+    }
+
+    private suspend fun startTreasureHunt(inputModel: WaypointModel): Boolean {
+
+        isHuntActive = true
+
+        setHuntStartVisibility()
+
+        while(isHuntActive) {
+
+            val userModel = WaypointModel(
+                0,
+                userMarker.position.latitude,
+                userMarker.position.longitude,
+                0
+            )
+
+            val direction = calculateDirection(userModel, inputModel)
+            setTextOnThread(direction)
+
+            println("debug: $direction")
+            println("debug: loop is still active")
+
+
+            delay(3000)
+        }
+
+        setHuntEndVisibility()
+
+        println("debug: loop is no longer active")
+        return true
+    }
+
+    private suspend fun setViewVisibility(view: View, visible: Boolean){
+        withContext(Main){
+            val viewToChange = view
+            viewToChange.isVisible = visible
+        }
+    }
+
+    private suspend fun setHuntStartVisibility(){
+        val buryButton = findViewById<Button>(R.id.buryButton)
+        val cancelButton = findViewById<Button>(R.id.cancelButton)
+        val digButton = findViewById<Button>(R.id.foundButton)
+        val directionTextView = findViewById<TextView>(R.id.directionTextView)
+        setViewVisibility(buryButton, false)
+        setViewVisibility(cancelButton, true)
+        setViewVisibility(digButton, false)
+        setViewVisibility(directionTextView, true)
+    }
+
+    private suspend fun setHuntEndVisibility(){
+        val buryButton = findViewById<Button>(R.id.buryButton)
+        val cancelButton = findViewById<Button>(R.id.cancelButton)
+        val digButton = findViewById<Button>(R.id.foundButton)
+        val directionTextView = findViewById<TextView>(R.id.directionTextView)
+        setViewVisibility(buryButton, true)
+        setViewVisibility(cancelButton, false)
+        setViewVisibility(digButton, false)
+        setViewVisibility(directionTextView, false)
+    }
+
+    private fun setText(inputText: String){
+        val directionText = findViewById<TextView>(R.id.directionTextView)
+        directionText.text = inputText
+    }
+    private suspend fun setTextOnThread(input: String){
+        withContext(Main) {
+            setText(input)
+        }
+    }
+
+    override fun onMarkerClick(marker: Marker): Boolean {
+
+        val userModel = WaypointModel(
+            0,
+            userMarker.position.latitude,
+            userMarker.position.longitude,
+            0
+        )
+
+        val fm = supportFragmentManager
+        val createFragment = WaypointFragment()
+        val args = Bundle()
+        val argsParam = "waypoint"
+        val model = marker.getTag()
+        if (model == "User" || model == null) {
+            return false
+        }
+        /*
+        if (findDistance(userModel, model as WaypointModel) > 15){
+            return false
+        }*/
+
+        val parseModel = model as Parcelable
+        args.putParcelable(argsParam, parseModel)
+        createFragment.arguments = args
+
+
+        createFragment.show(fm, "Waypoint")
+
+
+        return false;
+    }
+
+    private fun findDistance(waypointOne: WaypointModel, waypointTwo: WaypointModel): Float {
+
+        val locationOne: Location = Location("")
+        locationOne.latitude = waypointOne.getLatitude()
+        locationOne.longitude = waypointOne.getLongitude()
+
+        val locationTwo: Location = Location("")
+        locationTwo.latitude = waypointTwo.getLatitude()
+        locationTwo.longitude = waypointTwo.getLongitude()
+
+        val distance = locationOne.distanceTo(locationTwo)
+        return distance
+    }
+
+    override fun sendInput(input: Boolean, model: WaypointModel) {
+        val id = model.getId()
+        Log.e(TAG, "got the input: $input +  $id")
+        isHuntActive = false
+        treasureHunt(model)
+    }
+
+    //waypointOne will be the current location, waypointTwo is the desitnation
+    //returns a string of the direction (i.e. "meters west")
+    private fun calculateDirection(waypointOne: WaypointModel, waypointTwo: WaypointModel): String {
+        var degrees: Double
+        val direction: String
+
+        val finalLat = waypointTwo.getLatitude() - waypointOne.getLatitude()
+        val finalLong = waypointTwo.getLongitude() - waypointOne.getLongitude()
+
+        val firstDegrees = toDegrees(atan(finalLong / finalLat))
+        degrees = firstDegrees
+
+        if (sign(finalLat) == -1.0 && sign(finalLong) == -1.0) {
+            degrees = 180 + degrees
+        } else if (sign(finalLat) == 1.0 && sign(finalLong) == -1.0) {
+            degrees = 360 + degrees
+            degrees = Math.abs(degrees)
+        } else if (sign(finalLat) == -1.0 && sign(finalLong) == 1.0) {
+            degrees += 180
+            degrees = Math.abs(degrees)
+        }
+
+        direction = when (degrees) {
+            in 337.5..360.0 -> resources.getString(R.string.north)
+            in 0.0..22.5 -> resources.getString(R.string.north)
+            in 22.5..67.5 -> resources.getString(R.string.northeast)
+            in 67.5..112.5 -> resources.getString(R.string.east)
+            in 112.5..157.5 -> resources.getString(R.string.southeast)
+            in 157.5..202.5 -> resources.getString(R.string.south)
+            in 202.5..247.5 -> resources.getString(R.string.southwest)
+            in 247.5..292.5 -> resources.getString(R.string.west)
+            in 292.5..337.5 -> resources.getString(R.string.northwest)
+            else -> return "direction error  + $degrees + $firstDegrees"
+        }
+        return direction
+    }
+
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate((R.menu.main_menu_layout), menu)
@@ -102,7 +281,7 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
             Log.e(TAG, "Cant find style, Error", e)
         }
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(defaultLocation))
+        //mMap.moveCamera(CameraUpdateFactory.newLatLng(defaultLocation))
         mMap.setMinZoomPreference(minZoom)
         //mMap.setMaxZoomPreference(maxZoom)
         populateList()
@@ -165,7 +344,6 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         }
     }
 
-
     private fun getLastLocation() {
         if (isLocationEnabled()) {
             if (ActivityCompat.checkSelfPermission(
@@ -218,96 +396,5 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         }
     }
 
-
-    override fun onMarkerClick(marker: Marker): Boolean {
-
-        val userModel = WaypointModel(
-            0,
-            userMarker.position.latitude,
-            userMarker.position.longitude,
-            0
-        )
-
-        val fm = supportFragmentManager
-        val createFragment = WaypointFragment()
-        val args = Bundle()
-        val argsParam = "waypoint"
-        val model = marker.getTag()
-        if (model == "User" || model == null) {
-            return false
-        }
-        /*
-        if (findDistance(userModel, model as WaypointModel) > 15){
-            return false
-        }*/
-
-        val parseModel = model as Parcelable
-        args.putParcelable(argsParam, parseModel)
-        createFragment.arguments = args
-
-
-        createFragment.show(fm, "Waypoint")
-
-
-        return false;
-    }
-
-    private fun findDistance(waypointOne: WaypointModel, waypointTwo: WaypointModel): Float {
-
-        val locationOne: Location = Location("")
-        locationOne.latitude = waypointOne.getLatitude()
-        locationOne.longitude = waypointOne.getLongitude()
-
-        val locationTwo: Location = Location("")
-        locationTwo.latitude = waypointTwo.getLatitude()
-        locationTwo.longitude = waypointTwo.getLongitude()
-
-        val distance = locationOne.distanceTo(locationTwo)
-        return distance
-    }
-
-    override fun sendInput(input: Boolean, model: WaypointModel) {
-        val id = model.getId()
-        Log.e(TAG, "got the input: $input +  $id")
-    }
-
-    //waypointOne will be the current location, waypointTwo is the desitnation
-    //returns a string of the direction (i.e. "meters west")
-    fun calculateDirection(waypointOne: WaypointModel, waypointTwo: WaypointModel): String {
-        var degrees: Double
-        val direction: String
-
-        val finalLat = waypointTwo.getLatitude() - waypointOne.getLatitude()
-        val finalLong = waypointTwo.getLongitude() - waypointOne.getLongitude()
-
-        degrees = toDegrees(kotlin.math.atan(finalLong / finalLat))
-
-        if(sign(finalLat) == -1.0 && sign(finalLong) == -1.0){
-            degrees += 180
-        } else if (sign(finalLat) == 1.0 && sign(finalLong) == -1.0){
-            degrees -= 90
-        } else if (sign(finalLat) == -1.0 && sign(finalLong) == 1.0){
-            degrees -= 270
-        }
-
-        when (degrees) {
-            in 337.5..22.5 -> direction = resources.getString(R.string.north)
-            in 22.5..67.5 -> direction = resources.getString(R.string.northeast)
-            in 67.5..112.5 -> direction = resources.getString(R.string.east)
-            in 112.5..157.5 -> direction = resources.getString(R.string.southeast)
-            in 157.5..202.5 -> direction = resources.getString(R.string.south)
-            in 202.5..247.5 -> direction = resources.getString(R.string.southwest)
-            in 247.5..292.5 -> direction = resources.getString(R.string.west)
-            in 292.5..337.5 -> direction = resources.getString(R.string.northwest)
-            else -> return ""
-        }
-
-        return direction
-
-    }
-
-    fun treasureHunt(model: WaypointModel) {
-
-    }
 
 }

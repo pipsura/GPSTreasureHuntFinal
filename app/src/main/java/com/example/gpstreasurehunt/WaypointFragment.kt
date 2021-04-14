@@ -45,11 +45,11 @@ class WaypointFragment : DialogFragment() {
 
         digButton.setOnClickListener {
             var model: WaypointModel? = null
+            dismiss()
             if (arguments != null) {
                 model = requireArguments().getParcelable<WaypointModel>(argsParam)!!
                 onInputListener?.sendInput(true, model)
             }
-            dismiss()
         }
         return customView
     }
