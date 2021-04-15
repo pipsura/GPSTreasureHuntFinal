@@ -15,6 +15,7 @@ import android.view.Menu
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.view.isInvisible
@@ -59,6 +60,7 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
     private var waypointId = 0
 
     private var isHuntActive = false
+    private var currentModelId = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,7 +93,30 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         cancelButton.isInvisible = true
 
     }
-    
+
+    private fun getUserModel(): WaypointModel{
+        val userModel = WaypointModel(
+            0,
+            userMarker.position.latitude,
+            userMarker.position.longitude
+        )
+        return userModel
+    }
+
+    private suspend fun treasureSearch(userModel: WaypointModel, inputModel: WaypointModel){
+        val distance = findDistance(userModel, inputModel)
+        val digButton = findViewById<Button>(R.id.foundButton)
+        if (distance <= 5){
+            setFoundButtonTextOnThread(resources.getString(R.string.foundmarker))
+            setViewVisibility(digButton, true)
+        } else if (distance <= 10){
+            setViewVisibility(digButton, false)
+            Toast.makeText(this, resources.getString(R.string.closeAlert),
+                Toast.LENGTH_LONG).show()
+        } else {
+            setViewVisibility(digButton, false)
+        }
+    }
 
     private fun treasureHunt(inputModel: WaypointModel) {
         CoroutineScope(Main).launch {
@@ -102,21 +127,22 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
 
     private suspend fun startTreasureHunt(inputModel: WaypointModel): Boolean {
 
-        isHuntActive = true
+        val modelArray = inputModel.getPairArray()
+        val modelArraySize = modelArray.size
+        val modelArrayLast = modelArray.last()
+        var currentModel: WaypointModel = WaypointModel(
+            currentModelId, modelArray[currentModelId].first, modelArray[currentModelId].second
+        )
 
+        isHuntActive = true
         setHuntStartVisibility()
 
         while(isHuntActive) {
 
-            val userModel = WaypointModel(
-                0,
-                userMarker.position.latitude,
-                userMarker.position.longitude,
-                0
-            )
+            val userModel = getUserModel()
 
-            val direction = calculateDirection(userModel, inputModel)
-            setTextOnThread(direction)
+            val direction = calculateDirection(userModel, currentModel)
+            setTextViewOnThread(direction)
 
             println("debug: $direction")
             println("debug: loop is still active")
@@ -125,6 +151,7 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
             delay(3000)
         }
 
+        currentModelId = 0
         setHuntEndVisibility()
 
         println("debug: loop is no longer active")
@@ -160,24 +187,31 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         setViewVisibility(directionTextView, false)
     }
 
-    private fun setText(inputText: String){
+    private fun setTextView(inputText: String){
         val directionText = findViewById<TextView>(R.id.directionTextView)
         directionText.text = inputText
     }
-    private suspend fun setTextOnThread(input: String){
+
+    private suspend fun setTextViewOnThread(input: String){
         withContext(Main) {
-            setText(input)
+            setTextView(input)
+        }
+    }
+
+    private fun setFoundButtonText(inputText: String){
+        val button = findViewById<Button>(R.id.foundButton)
+        button.text = inputText
+    }
+
+    private suspend fun setFoundButtonTextOnThread(input: String){
+        withContext(Main) {
+            setFoundButtonText(input)
         }
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {
 
-        val userModel = WaypointModel(
-            0,
-            userMarker.position.latitude,
-            userMarker.position.longitude,
-            0
-        )
+        val userModel = getUserModel()
 
         val fm = supportFragmentManager
         val createFragment = WaypointFragment()
@@ -260,7 +294,6 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         }
         return direction
     }
-
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate((R.menu.main_menu_layout), menu)
@@ -377,7 +410,7 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         for (i in 1..10) {
             val latitude: Double = Random.nextDouble(51.60, 51.62)
             val longitude: Double = Random.nextDouble(3.860, 3.880) * -1
-            val model = WaypointModel(i, latitude, longitude, 3)
+            val model = WaypointModel(i, latitude, longitude)
             model.generateRandomPointsArray()
             waypointId.inc()
             waypointArrayList.add(model)

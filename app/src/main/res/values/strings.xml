@@ -17,5 +17,7 @@
     <string name="south">meters south</string>
     <string name="southeast">meters south east</string>
     <string name="southwest">meters south west</string>
+    <string name="foundmarker">Next marker!</string>
+    <string name="closeAlert">You are close!</string>
 
 </resources>

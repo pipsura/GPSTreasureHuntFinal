@@ -9,14 +9,13 @@ import kotlin.random.Random
 class WaypointModel(
     var idInput: Int,
     var latitudeInput: Double,
-    var longitudeInput: Double,
-    var usesInput: Int
+    var longitudeInput: Double
 ) : Parcelable {
 
     private var idNum: Int? = idInput
     private var latitudeNum: Double? = latitudeInput
     private var longitudeNum: Double? = longitudeInput
-    private var usesNum: Int? = usesInput
+    private var usesNum: Int? = 3
 
 
     private var pointsArrayList = ArrayList<Pair<Double, Double>>()
