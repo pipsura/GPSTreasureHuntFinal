@@ -62,6 +62,9 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
     private var isHuntActive = false
     private var currentModelId = 0
 
+    private var cheatModel: WaypointModel = WaypointModel(0, 0.0, 0.0)
+    private var currentModel: WaypointModel = WaypointModel(0, 0.0, 0.0)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -83,8 +86,7 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         val cancelButton = findViewById<Button>(R.id.cancelButton)
         val directionText = findViewById<TextView>(R.id.directionTextView)
 
-        digButton.setOnClickListener {
-        }
+
         digButton.isInvisible = true
 
         cancelButton.setOnClickListener{
@@ -103,18 +105,50 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         return userModel
     }
 
+    private fun setCheatButton(inputModel: WaypointModel){
+        val cheatButton = findViewById<Button>(R.id.cheatButton)
+        val modelArray = inputModel.getPairArray()
+        cheatButton.setOnClickListener{
+            cheatModel = WaypointModel(0, modelArray[currentModelId].first, modelArray[currentModelId].second)
+            println( modelArray[currentModelId].first.toString() + modelArray[currentModelId].second.toString())
+        }
+
+    }
+
+    private suspend fun setCheatButtonThread(inputModel: WaypointModel){
+        withContext(Main){
+            setCheatButton(inputModel)
+        }
+    }
+
     private suspend fun treasureSearch(userModel: WaypointModel, inputModel: WaypointModel){
-        val distance = findDistance(userModel, inputModel)
+
+        val distance = findDistance(userModel, currentModel)
         val digButton = findViewById<Button>(R.id.foundButton)
-        if (distance <= 5){
-            setFoundButtonTextOnThread(resources.getString(R.string.foundmarker))
-            setViewVisibility(digButton, true)
-        } else if (distance <= 10){
-            setViewVisibility(digButton, false)
-            Toast.makeText(this, resources.getString(R.string.closeAlert),
-                Toast.LENGTH_LONG).show()
+
+        val modelArray = inputModel.getPairArray()
+        val modelArraySize = modelArray.size
+        var buttonText: String = ""
+        println(modelArraySize.toString() + " " + currentModelId.toString())
+        if(currentModelId == modelArraySize -1){
+            buttonText = resources.getString(R.string.digButton)
         } else {
-            setViewVisibility(digButton, false)
+            buttonText = resources.getString(R.string.foundmarker)
+        }
+        when {
+            distance <= 5 -> {
+                setFoundButtonTextOnThread(buttonText)
+                setViewVisibility(digButton, true)
+                setDigButtonOnClick(modelArray)
+            }
+            distance <= 10 -> {
+                setViewVisibility(digButton, false)
+                Toast.makeText(this, resources.getString(R.string.closeAlert),
+                    Toast.LENGTH_LONG).show()
+            }
+            else -> {
+                setViewVisibility(digButton, false)
+            }
         }
     }
 
@@ -128,11 +162,13 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
     private suspend fun startTreasureHunt(inputModel: WaypointModel): Boolean {
 
         val modelArray = inputModel.getPairArray()
-        val modelArraySize = modelArray.size
         val modelArrayLast = modelArray.last()
-        var currentModel: WaypointModel = WaypointModel(
-            currentModelId, modelArray[currentModelId].first, modelArray[currentModelId].second
-        )
+        for(i in modelArray){
+            println(i.toString())
+        }
+        currentModel = WaypointModel(
+            currentModelId, modelArray[currentModelId].first, modelArray[currentModelId].second)
+
 
         isHuntActive = true
         setHuntStartVisibility()
@@ -140,15 +176,16 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         while(isHuntActive) {
 
             val userModel = getUserModel()
-
-            val direction = calculateDirection(userModel, currentModel)
+            setCheatButtonThread(inputModel)
+            treasureSearch(cheatModel, inputModel)
+            val direction = calculateDirection(cheatModel, currentModel)
             setTextViewOnThread(direction)
 
-            println("debug: $direction")
-            println("debug: loop is still active")
+                //println("debug: $direction")
+            //println("debug: loop is still active")
 
 
-            delay(3000)
+            delay(1000)
         }
 
         currentModelId = 0
@@ -156,6 +193,27 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
 
         println("debug: loop is no longer active")
         return true
+    }
+
+    private fun setDigButtonOnClick(modelArray: ArrayList<Pair<Double, Double>>){
+        val digButton = findViewById<Button>(R.id.foundButton)
+            digButton.setOnClickListener {
+            if (currentModelId ==  modelArray.size -1) {
+
+                    isHuntActive = false
+                    Toast.makeText(this, resources.getString(R.string.foundTreasureAlert),
+                        Toast.LENGTH_LONG).show()
+
+            } else {
+
+                    currentModelId += 1
+                    Toast.makeText(this, resources.getString(R.string.foundMarkerAlert),
+                        Toast.LENGTH_LONG).show()
+                    currentModel = WaypointModel(
+                        currentModelId, modelArray[currentModelId].first, modelArray[currentModelId].second
+                    )
+                }
+        }
     }
 
     private suspend fun setViewVisibility(view: View, visible: Boolean){

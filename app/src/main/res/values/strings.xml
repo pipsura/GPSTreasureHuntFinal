@@ -19,5 +19,7 @@
     <string name="southwest">meters south west</string>
     <string name="foundmarker">Next marker!</string>
     <string name="closeAlert">You are close!</string>
+    <string name="foundTreasureAlert">You found the treasure!</string>
+    <string name="foundMarkerAlert">You found a marker!</string>
 
 </resources>
