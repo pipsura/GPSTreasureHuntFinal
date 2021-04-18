@@ -18,8 +18,8 @@
             android:id="@+id/directionTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="48dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="64dp"
             android:text=""
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -93,29 +93,29 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/map" />
+    <!--
+       <Button
+           android:id="@+id/cheatButton"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_marginStart="27dp"
+           android:layout_marginTop="20dp"
+           android:layout_marginEnd="27dp"
+           android:text="cheat"
+           app:layout_constraintEnd_toStartOf="@+id/map"
+           app:layout_constraintHorizontal_bias="0.731"
+           app:layout_constraintStart_toEndOf="@+id/map"
+           app:layout_constraintTop_toBottomOf="@+id/foundButton" />
+   -->
+       <Button
+           android:id="@+id/buryMarkerButton"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_marginBottom="16dp"
+           android:text="@string/addWaypoint"
+           app:layout_constraintBottom_toTopOf="@+id/constraintLayout"
+           app:layout_constraintEnd_toEndOf="parent"
+           app:layout_constraintStart_toStartOf="parent" />
 
-    <Button
-        android:id="@+id/cheatButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="27dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="27dp"
-        android:text="cheat"
-        app:layout_constraintEnd_toStartOf="@+id/map"
-        app:layout_constraintHorizontal_bias="0.731"
-        app:layout_constraintStart_toEndOf="@+id/map"
-        app:layout_constraintTop_toBottomOf="@+id/foundButton" />
 
-    <Button
-        android:id="@+id/buryMarkerButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:text="@string/addWaypoint"
-        app:layout_constraintBottom_toTopOf="@+id/constraintLayout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+   </androidx.constraintlayout.widget.ConstraintLayout>

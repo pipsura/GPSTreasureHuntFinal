@@ -130,6 +130,7 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
     }
 
     private suspend fun runTreasureBury() {
+        userBuryPairList.clear()
         userBuryModel = getUserModel()
         userBuryPairList.add(Pair(userBuryModel.getLatitude(), userBuryModel.getLongitude()))
 
@@ -144,33 +145,25 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
                 val nextMarkerAsModel = WaypointModel(0, nextMarker.first, nextMarker.second)
 
                 val distanceBetween = findDistance(lastModel, nextMarkerAsModel)
-                if (distanceBetween > 5 && distanceBetween < 20 &&
+                if (distanceBetween > 2 && distanceBetween < 25 &&
                     (lastModel.getLatitude() != nextMarkerAsModel.getLatitude() &&
                             lastModel.getLongitude() != nextMarkerAsModel.getLongitude())
                 ) {
                     userBuryPairList.add(nextMarker)
                     makeToast(resources.getString(R.string.addMarkerSuccess))
                 } else {
-                    makeToast(resources.getString(R.string.addMarkerError))
+                    makeToast(resources.getString(R.string.addMarkerError) + distanceBetween)
                 }
                 isMarkerButtonClicked = false
 
             }
 
-            delay(500)
+            delay(100)
         }
 
         endTreasureBury()
 
     }
-
-    private fun makeToast(input: String){
-        Toast.makeText(
-            this, input,
-            Toast.LENGTH_SHORT
-        ).show()
-    }
-
 
     private suspend fun startTreasureBury() {
 
@@ -214,7 +207,8 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         if (!wasCancelled) {
             if (userBuryPairList.size > 3) {
                 val modelToAdd = userBuryModel
-                modelToAdd.setPointsArray(userBuryPairList)
+                val arrayToAdd = userBuryPairList
+                modelToAdd.setPointsArray(arrayToAdd)
                 waypointArrayList.add(modelToAdd)
                 addModelMarker(modelToAdd)
             } else {
@@ -223,7 +217,7 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         }
 
     }
-
+/*
     private fun setCheatButton(inputModel: WaypointModel) {
         val cheatButton = findViewById<Button>(R.id.cheatButton)
         val modelArray = inputModel.getPairArray()
@@ -242,6 +236,49 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         withContext(Main) {
             setCheatButton(inputModel)
         }
+    }
+*/
+
+
+    private fun treasureHunt(inputModel: WaypointModel) {
+        CoroutineScope(Main).launch {
+            val result = startTreasureHunt(inputModel)
+            println("debug: $result")
+        }
+    }
+
+    private suspend fun startTreasureHunt(inputModel: WaypointModel): Boolean {
+
+        val modelArray = inputModel.getPairArray()
+        val modelArrayLast = modelArray.last()
+        for (i in modelArray) {
+            println(i.toString())
+        }
+        currentModel = WaypointModel(
+            currentModelId, modelArray[currentModelId].first, modelArray[currentModelId].second
+        )
+
+        isHuntActive = true
+        setHuntStartVisibility()
+
+        while (isHuntActive) {
+
+            val userModel = getUserModel()
+            //setCheatButtonThread(inputModel)
+            treasureSearch(userModel, inputModel)
+            val distance = findDistance(userModel, currentModel)
+            val direction = calculateDirection(userModel, currentModel)
+            val textOutput = "$distance $direction"
+            setTextViewOnThread(textOutput)
+            //println("debug: $direction")
+            //println("debug: loop is still active")
+            delay(50)
+        }
+
+        currentModelId = 0
+        setHuntEndVisibility()
+        println("debug: loop is no longer active")
+        return true
     }
 
     private suspend fun treasureSearch(userModel: WaypointModel, inputModel: WaypointModel) {
@@ -276,51 +313,6 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
             }
         }
     }
-
-    private fun treasureHunt(inputModel: WaypointModel) {
-        CoroutineScope(Main).launch {
-            val result = startTreasureHunt(inputModel)
-            println("debug: $result")
-        }
-    }
-
-    private suspend fun startTreasureHunt(inputModel: WaypointModel): Boolean {
-
-        val modelArray = inputModel.getPairArray()
-        val modelArrayLast = modelArray.last()
-        for (i in modelArray) {
-            println(i.toString())
-        }
-        currentModel = WaypointModel(
-            currentModelId, modelArray[currentModelId].first, modelArray[currentModelId].second
-        )
-
-
-        isHuntActive = true
-        setHuntStartVisibility()
-
-        while (isHuntActive) {
-
-            val userModel = getUserModel()
-            setCheatButtonThread(inputModel)
-            treasureSearch(cheatModel, inputModel)
-            val direction = calculateDirection(cheatModel, currentModel)
-            setTextViewOnThread(direction)
-
-            //println("debug: $direction")
-            //println("debug: loop is still active")
-
-
-            delay(500)
-        }
-
-        currentModelId = 0
-        setHuntEndVisibility()
-
-        println("debug: loop is no longer active")
-        return true
-    }
-
 
     private fun setDigButtonOnClick(modelArray: ArrayList<Pair<Double, Double>>) {
         val digButton = findViewById<Button>(R.id.foundButton)
@@ -400,6 +392,12 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         }
     }
 
+    private fun makeToast(input: String){
+        Toast.makeText(
+            this, input,
+            Toast.LENGTH_SHORT
+        ).show()
+    }
 
     override fun onMarkerClick(marker: Marker): Boolean {
 
@@ -413,10 +411,10 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         if (model == "User" || model == null) {
             return false
         }
-        /*
-        if (findDistance(userModel, model as WaypointModel) > 15){
-            return false
-        }*/
+
+        //if (findDistance(userModel, model as WaypointModel) > 15){
+         //   return false
+        //}
 
         val parseModel = model as Parcelable
         args.putParcelable(argsParam, parseModel)
