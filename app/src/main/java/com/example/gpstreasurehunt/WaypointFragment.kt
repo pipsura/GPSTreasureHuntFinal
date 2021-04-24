@@ -4,6 +4,8 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.ContentValues.TAG
 import android.content.Context
+import android.icu.math.BigDecimal
+import android.icu.math.BigDecimal.ROUND_CEILING
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -14,39 +16,57 @@ import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.example.gpstreasurehunt.models.WaypointModel
 import kotlinx.android.synthetic.main.activity_main.view.*
+import java.math.RoundingMode
 
-
+/**
+ * TODO
+ *
+ */
 class WaypointFragment : DialogFragment() {
 
+    /**
+     * Sets up an interface so data can be returned back to the main activity
+     *
+     */
     interface OnInputListener {
         fun sendInput(input: Boolean, model: WaypointModel)
     }
     var onInputListener: OnInputListener? = null
 
-    lateinit var customView: View;
+    lateinit var customView: View
 
+    /**
+     * Sets up the dialog when it is created.
+     *
+     * @param inflater
+     * @param container
+     * @param savedInstanceState
+     * @return The view of the dialog
+     */
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Simply return the already inflated custom view
-        var latText = customView.findViewById<TextView>(R.id.Latitude)
-        var longText = customView.findViewById<TextView>(R.id.Longitude)
-        var digButton = customView.findViewById<Button>(R.id.digButton)
+        val latText = customView.findViewById<TextView>(R.id.Latitude)
+        val longText = customView.findViewById<TextView>(R.id.Longitude)
+        val digButton = customView.findViewById<Button>(R.id.digButton)
         val argsParam = "waypoint"
         if (arguments != null) {
-            var model = requireArguments().getParcelable<WaypointModel>(argsParam)
-            val latStr = model!!.getLatitude().toString()
-            val longStr = model!!.getLongitude().toString()
+            //Setting the TextViews text as the lat and long from the WapointModel that was parsed as args
+            val model = requireArguments().getParcelable<WaypointModel>(argsParam)
+            val latStr = (BigDecimal(model!!.getLatitude()).setScale(2, ROUND_CEILING)).toString()
+            val longStr =(BigDecimal(model.getLongitude()).setScale(2, ROUND_CEILING)).toString()
             latText!!.text = latStr
             longText!!.text = longStr
         }
 
+        //Setting the action for when the user presses dig
         digButton.setOnClickListener {
             var model: WaypointModel? = null
             dismiss()
             if (arguments != null) {
+                //Starts the treasure hunt functions in MainActivity
                 model = requireArguments().getParcelable<WaypointModel>(argsParam)!!
                 onInputListener?.sendInput(true, model)
             }
@@ -54,12 +74,22 @@ class WaypointFragment : DialogFragment() {
         return customView
     }
 
-
+    /**
+     * When the dialog is created set the view.
+     *
+     * @param savedInstanceState - Arguments
+     * @return The dialog fragment displayed
+     */
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         customView = requireActivity().layoutInflater.inflate(R.layout.waypoint_fragment, null)
         return AlertDialog.Builder(requireContext()).setView(customView).create()
     }
 
+    /**
+     * Sets up the button listener to return data.
+     *
+     * @param context
+     */
     override fun onAttach(context: Context) {
         super.onAttach(context)
         try {
