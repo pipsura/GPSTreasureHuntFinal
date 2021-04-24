@@ -19,8 +19,14 @@ import kotlinx.android.synthetic.main.activity_main.view.*
 import java.math.RoundingMode
 
 /**
- * TODO
+ * WaypointFragment.kt
+ * Version 1.0
+ * Last modified: 24/04/21
+ * @author William Harvey
  *
+ *
+ * Class for the pop-up dialog fragment when a waypoint is clicked.
+ * Implements DialogFragment.
  */
 class WaypointFragment : DialogFragment() {
 

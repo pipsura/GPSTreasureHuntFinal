@@ -7,14 +7,18 @@ import kotlin.random.Random
 
 /**
  *
- */
-
-/**
- * TODO
+ * WaypointModel.kt
+ * Version 1.0
+ * Last modified: 24/04/21
+ * @author William Harvey
  *
- * @property idInput
- * @property latitudeInput
- * @property longitudeInput
+ *
+ * A model (object) class for the Waypoint model.
+ * Class declaration also acts as the constructor.
+ * Parcelable so object can be added to a bundle and parsed between fragments/activities.
+ * @property idInput - The id of the model
+ * @property latitudeInput - The latitude of the model
+ * @property longitudeInput - The longitude of the model
  */
 @Parcelize
 class WaypointModel(
@@ -23,12 +27,13 @@ class WaypointModel(
     var longitudeInput: Double
 ) : Parcelable {
 
-    private var idNum: Int? = idInput
-    private var latitudeNum: Double? = latitudeInput
-    private var longitudeNum: Double? = longitudeInput
+    private var idNum: Int? = idInput //ID of the object
+    private var latitudeNum: Double? = latitudeInput //The latitude of the object
+    private var longitudeNum: Double? = longitudeInput //The longitude of the object
 
 
-    private var pointsArrayList = ArrayList<Pair<Double, Double>>()
+    private var pointsArrayList = ArrayList<Pair<Double, Double>>() //An arraylist of all
+    // the points in the treasure hunt
 
     /**
      * Generates a pair of doubles for the lat and long of a point in the treasure hunt.

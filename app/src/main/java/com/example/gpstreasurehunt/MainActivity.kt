@@ -41,45 +41,50 @@ import kotlin.math.sign
 import kotlin.random.Random
 
 /**
- * TODO
+ * MainActivity.kt
+ * Version 1.0
+ * Last modified: 24/04/21
+ * @author William Harvey
  *
+ * The main activity of the app.
  */
 class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
     OnMapReadyCallback, WaypointFragment.OnInputListener {
 
-    private lateinit var mMap: GoogleMap
+    private lateinit var mMap: GoogleMap //A google map object for the fragment
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
-    private var intervalVal = 3000
-    private var fastestIntervalVal = 1000
-    private var minZoom = 15.0f
-    private var maxZoom = 25.0f
+    private var intervalVal = 1000 //The interval between getting new user location
+    private var fastestIntervalVal = 500 //The fastest possible interval
+    private var minZoom = 15.0f //How zoomed in the user can set the camera
+    private var maxZoom = 25.0f //How zoomed out the user can set the camera
     private val LOCATION_PERMISSION_REQ_CODE = 1000
-    private lateinit var userMarker: Marker
+    private lateinit var userMarker: Marker //A marker displaying the user's location
 
-    private val defaultLocation = LatLng(0.0, 0.0)
+    private val defaultLocation = LatLng(0.0, 0.0) //A default location to set the camera
 
-    private var waypointArrayList = ArrayList<WaypointModel>()
+    private var waypointArrayList = ArrayList<WaypointModel>() //An arraylist of all the markers on the map
 
-    private var isHuntActive = false
-    private var isBuryActive = false
-    private var wasCancelled = false
-    private var currentModelId = 0
+    private var isHuntActive = false //Boolean which says when the treasure hunt is active
+    private var isBuryActive = false //Boolean which says when finding the treasure is active
+    private var wasCancelled = false //Boolean which is used to know if the operation was cancelled or ended normally
 
-    private var currentModel: WaypointModel = WaypointModel(0, 0.0, 0.0)
+    private var currentModelId = 0 //Id of which model the user is currently at
+    private var currentModel: WaypointModel = WaypointModel(
+        0, 0.0, 0.0) //The model object
 
-    private var userBuryModel = WaypointModel(0, 0.0, 0.0)
-    private var userBuryPairList = ArrayList<Pair<Double, Double>>()
+    private var userBuryModel = WaypointModel(0, 0.0, 0.0) //A waypoint model used for buring treasure
+    private var userBuryPairList = ArrayList<Pair<Double, Double>>() //An arraylist of all the markers the user has specified in the route
 
-    private var isMarkerButtonClicked = false
-    private lateinit var nextMarker: Pair<Double, Double>
+    private var isMarkerButtonClicked = false //Boolean which determines if the marker button is clicked
+    private lateinit var nextMarker: Pair<Double, Double> //A pair containing the lat/long of the next marker in the operation
 
-    private val maxMarkerDistance = 25
-    private val minMarkerDistance = 5
+    private val maxMarkerDistance = 25 //Maximum possible distance between markers
+    private val minMarkerDistance = 5 //Minimum possible distance between markers
 
-    private val loopDelay: Long = 50
+    private val loopDelay: Long = 50 //How often the loops should run/update
 
     /**
-     * TODO
+     * Setting up the main activity when it is started in the app.
      *
      * @param savedInstanceState
      */
@@ -93,10 +98,10 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
 
         //Map
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        val fm = supportFragmentManager
+        val fm = supportFragmentManager //Setting the map to the fragment
         val mapFragment = fm.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
-        requestNewLocationData()
+        requestNewLocationData() //Getting user location
 
         //Widgets
         val buryButton = findViewById<Button>(R.id.buryButton)
@@ -104,12 +109,12 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         val cancelButton = findViewById<Button>(R.id.cancelButton)
         val markerButton = findViewById<Button>(R.id.buryMarkerButton)
         val finaliseButton = findViewById<Button>(R.id.finishBuryButton)
-
+        //Setting visibility
         digButton.isInvisible = true
         cancelButton.isInvisible = true
         markerButton.isInvisible = true
         finaliseButton.isInvisible = true
-
+        //Setting onClickListeners
         cancelButton.setOnClickListener {
             isHuntActive = false
             isBuryActive = false
