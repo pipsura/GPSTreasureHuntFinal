@@ -26,10 +26,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.delay
@@ -619,8 +616,7 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
         mMap = googleMap
 
         try {
-            var success = false
-            success = mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.style_json))
+            var success = mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.style_json))
             if (!success) {
                 Log.e(TAG, "Style parsing failed")
             }
@@ -683,7 +679,8 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
             }
 
             //Adds a new marker of the user to the map and sets the camera (view position) to it
-            userMarker = mMap.addMarker(MarkerOptions().position(lastLoc).title("Current location"))
+            userMarker = mMap.addMarker(MarkerOptions().position(lastLoc).title("Current location")
+                .icon(BitmapDescriptorFactory.defaultMarker(170F)))
             userMarker.tag = "User"
             mMap.animateCamera(CameraUpdateFactory.newLatLng(lastLoc))
         }
@@ -696,8 +693,8 @@ class MainActivity : AppCompatActivity(), GoogleMap.OnMarkerClickListener,
     private fun populateList() {
         for (i in 0..9) {
             //Generating random latitudes and longitudes near to Bay Campus
-            val latitude: Double = Random.nextDouble(51.60, 51.62)
-            val longitude: Double = Random.nextDouble(3.860, 3.880) * -1
+            val latitude: Double = Random.nextDouble(51.615, 51.62)
+            val longitude: Double = Random.nextDouble(3.87, 3.89) * -1
             val model = WaypointModel(i, latitude, longitude)
             model.generateRandomPointsArray()
             waypointArrayList.add(model) //Add model to list

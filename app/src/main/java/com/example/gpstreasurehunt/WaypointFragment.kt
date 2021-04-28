@@ -4,6 +4,8 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.ContentValues.TAG
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.icu.math.BigDecimal
 import android.icu.math.BigDecimal.ROUND_CEILING
 import android.os.Bundle
@@ -54,29 +56,22 @@ class WaypointFragment : DialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val latText = customView.findViewById<TextView>(R.id.Latitude)
-        val longText = customView.findViewById<TextView>(R.id.Longitude)
         val digButton = customView.findViewById<Button>(R.id.digButton)
         val argsParam = "waypoint"
-        if (arguments != null) {
-            //Setting the TextViews text as the lat and long from the WapointModel that was parsed as args
+        /*if (arguments != null) {
             val model = requireArguments().getParcelable<WaypointModel>(argsParam)
-            val latStr = (BigDecimal(model!!.getLatitude()).setScale(2, ROUND_CEILING)).toString()
-            val longStr =(BigDecimal(model.getLongitude()).setScale(2, ROUND_CEILING)).toString()
-            latText!!.text = latStr
-            longText!!.text = longStr
-        }
+        }*/
 
         //Setting the action for when the user presses dig
         digButton.setOnClickListener {
-            var model: WaypointModel? = null
             dismiss()
             if (arguments != null) {
                 //Starts the treasure hunt functions in MainActivity
-                model = requireArguments().getParcelable<WaypointModel>(argsParam)!!
+                val model = requireArguments().getParcelable<WaypointModel>(argsParam)!!
                 onInputListener?.sendInput(true, model)
             }
         }
+        dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         return customView
     }
 

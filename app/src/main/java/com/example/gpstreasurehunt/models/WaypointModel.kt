@@ -2,6 +2,7 @@ package com.example.gpstreasurehunt.models
 
 import android.os.Parcel
 import android.os.Parcelable
+import kotlinx.android.parcel.IgnoredOnParcel
 import kotlinx.android.parcel.Parcelize
 import kotlin.random.Random
 
@@ -27,11 +28,15 @@ class WaypointModel(
     var longitudeInput: Double
 ) : Parcelable {
 
+    @IgnoredOnParcel
     private var idNum: Int? = idInput //ID of the object
+    @IgnoredOnParcel
     private var latitudeNum: Double? = latitudeInput //The latitude of the object
+    @IgnoredOnParcel
     private var longitudeNum: Double? = longitudeInput //The longitude of the object
 
 
+    @IgnoredOnParcel
     private var pointsArrayList = ArrayList<Pair<Double, Double>>() //An arraylist of all
     // the points in the treasure hunt
 
